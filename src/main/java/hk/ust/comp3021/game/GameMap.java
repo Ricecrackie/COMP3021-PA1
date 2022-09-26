@@ -6,8 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.Optional;
-import java.util.Set;
+import javax.print.attribute.standard.Destination;
+import java.util.*;
 
 /**
  * A Sokoban game board.
@@ -20,7 +20,11 @@ import java.util.Set;
  * GameBoard is capable to create many GameState instances, each representing an ongoing game.
  */
 public class GameMap {
-
+    private int width;
+    private int height;
+    private int undoLimit;
+    private Set<Position> destinations;
+    private Entity[][] map;
     /**
      * Create a new GameMap with width, height, set of box destinations and undo limit.
      *
@@ -34,7 +38,12 @@ public class GameMap {
      */
     public GameMap(int maxWidth, int maxHeight, Set<Position> destinations, int undoLimit) {
         // TODO
-        throw new NotImplementedException();
+        this.width = maxWidth;
+        this.height = maxHeight;
+        this.destinations = destinations;
+        this.undoLimit = undoLimit;
+        this.map = new Entity[maxHeight][maxWidth];
+        //throw new NotImplementedException();
     }
 
     /**
@@ -74,7 +83,22 @@ public class GameMap {
      */
     public static GameMap parse(String mapText) {
         // TODO
-        throw new NotImplementedException();
+        ArrayList<String> list = new ArrayList<String>(Arrays.asList(mapText.split("\\r?\\n")));
+        int undoLimit = Integer.parseInt(list.get(0));
+        boolean illegal = false;
+
+        list.remove(0);
+        int height = list.size();
+        int width = list.get(0).length();
+        ArrayList<Position> destinationList = new ArrayList<Position>();
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                if (list.get(i).charAt(j) == '@') {
+                    destinationList.add(new Position(j, i));
+                }
+            }
+        }
+        return new GameMap(width, height, new HashSet<Position>(destinationList), undoLimit);
     }
 
     /**
@@ -86,7 +110,7 @@ public class GameMap {
     @Nullable
     public Entity getEntity(Position position) {
         // TODO
-        throw new NotImplementedException();
+        return this.map[position.y()][position.x()];
     }
 
     /**
@@ -97,7 +121,14 @@ public class GameMap {
      */
     public void putEntity(Position position, Entity entity) {
         // TODO
-        throw new NotImplementedException();
+        int x = position.x();
+        int y = position.y();
+        switch (entity) {
+            case Box b -> this.map[y][x] = new Box(b.getPlayerId());
+            case Empty ignored -> this.map[y][x] = new Empty();
+            case Player p -> this.map[y][x] = new Player(p.getId());
+            case Wall ignored -> this.map[y][x] = new Wall();
+        }
     }
 
     /**
@@ -107,7 +138,7 @@ public class GameMap {
      */
     public @NotNull @Unmodifiable Set<Position> getDestinations() {
         // TODO
-        throw new NotImplementedException();
+        return this.destinations;
     }
 
     /**
@@ -117,7 +148,7 @@ public class GameMap {
      */
     public Optional<Integer> getUndoLimit() {
         // TODO
-        throw new NotImplementedException();
+        return Optional.of(this.undoLimit);
     }
 
     /**
@@ -137,7 +168,7 @@ public class GameMap {
      */
     public int getMaxWidth() {
         // TODO
-        throw new NotImplementedException();
+        return this.width;
     }
 
     /**
@@ -147,6 +178,6 @@ public class GameMap {
      */
     public int getMaxHeight() {
         // TODO
-        throw new NotImplementedException();
+        return this.height;
     }
 }
