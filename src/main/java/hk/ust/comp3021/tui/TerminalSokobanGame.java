@@ -6,6 +6,9 @@ import hk.ust.comp3021.game.GameState;
 import hk.ust.comp3021.game.InputEngine;
 import hk.ust.comp3021.game.RenderingEngine;
 import hk.ust.comp3021.utils.NotImplementedException;
+import hk.ust.comp3021.utils.StringResources;
+
+import java.util.Optional;
 
 /**
  * A Sokoban game running in the terminal.
@@ -32,12 +35,27 @@ public class TerminalSokobanGame extends AbstractSokobanGame {
         this.renderingEngine = renderingEngine;
         // TODO
         // Check the number of players
-        throw new NotImplementedException();
+        if (gameState.getAllPlayerPositions().size() > 2) {
+            throw new IllegalArgumentException();
+        }
+        //throw new NotImplementedException();
     }
 
     @Override
     public void run() {
         // TODO
-        throw new NotImplementedException();
+        this.renderingEngine.message(StringResources.GAME_READY_MESSAGE);
+        while (!this.shouldStop()) {
+            this.renderingEngine.render(this.state);
+            Optional<Integer> quota = this.state.getUndoQuota();
+            if (quota.isEmpty()) {
+                this.renderingEngine.message(StringResources.UNDO_QUOTA_UNLIMITED);
+            }
+            else if (quota.isPresent()) {
+                this.renderingEngine.message(String.format(StringResources.UNDO_QUOTA_TEMPLATE, this.state.getUndoQuota().get()));
+            }
+            var act = this.inputEngine.fetchAction();
+            var actResult = this.processAction(act);
+        }
     }
 }

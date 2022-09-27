@@ -1,11 +1,14 @@
 package hk.ust.comp3021.game;
 
+import hk.ust.comp3021.entities.Box;
+import hk.ust.comp3021.entities.Empty;
 import hk.ust.comp3021.entities.Entity;
 import hk.ust.comp3021.utils.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,7 +25,10 @@ import java.util.Set;
  * <li>Undo quota left.</li>
  */
 public class GameState {
-
+    private final GameMap map;
+    private Optional<Integer> undoQuota;
+    private GameState checkpoint;
+    private GameMap state;
     /**
      * Create a running game state from a game map.
      *
@@ -30,7 +36,9 @@ public class GameState {
      */
     public GameState(@NotNull GameMap map) {
         // TODO
-        throw new NotImplementedException();
+        this.map = map;
+        this.undoQuota = map.getUndoLimit();
+        this.state = new GameMap(map);
     }
 
     /**
@@ -41,7 +49,7 @@ public class GameState {
      */
     public @Nullable Position getPlayerPositionById(int id) {
         // TODO
-        throw new NotImplementedException();
+        return this.state.getPlayerPosition().get((char)('A'+id));
     }
 
     /**
@@ -51,7 +59,7 @@ public class GameState {
      */
     public @NotNull Set<Position> getAllPlayerPositions() {
         // TODO
-        throw new NotImplementedException();
+        return new HashSet<Position>(this.state.getPlayerPosition().values());
     }
 
     /**
@@ -62,7 +70,7 @@ public class GameState {
      */
     public @Nullable Entity getEntity(@NotNull Position position) {
         // TODO
-        throw new NotImplementedException();
+        return this.state.getEntity(position);
     }
 
     /**
@@ -73,7 +81,7 @@ public class GameState {
      */
     public @NotNull @Unmodifiable Set<Position> getDestinations() {
         // TODO
-        throw new NotImplementedException();
+        return this.map.getDestinations();
     }
 
     /**
@@ -85,7 +93,7 @@ public class GameState {
      */
     public Optional<Integer> getUndoQuota() {
         // TODO
-        throw new NotImplementedException();
+        return this.undoQuota;
     }
 
     /**
@@ -96,7 +104,13 @@ public class GameState {
      */
     public boolean isWin() {
 // TODO
-        throw new NotImplementedException();
+        for (var position : this.map.getDestinations()) {
+            if (!(this.map.getEntity(position) instanceof Box)) {
+                return false;
+            }
+        }
+        return true;
+        //throw new NotImplementedException();
     }
 
     /**
@@ -109,7 +123,8 @@ public class GameState {
      */
     public void move(Position from, Position to) {
         // TODO
-        throw new NotImplementedException();
+        this.state.putEntity(to, this.state.getEntity(from));
+        this.state.putEntity(from, new Empty());
     }
 
     /**
@@ -122,7 +137,8 @@ public class GameState {
      */
     public void checkpoint() {
         // TODO
-        throw new NotImplementedException();
+        this.checkpoint = new GameState(new GameMap(this.state));
+        this.checkpoint.undoQuota = this.undoQuota;
     }
 
     /**
@@ -134,7 +150,17 @@ public class GameState {
      */
     public void undo() {
         // TODO
-        throw new NotImplementedException();
+        if (this.checkpoint == null) {
+            this.state = new GameMap(this.map);
+        }
+        else {
+            this.state = new GameMap(this.checkpoint.state);
+            if (this.undoQuota.isPresent() && this.undoQuota.get() > 1) {
+                this.undoQuota = Optional.of(this.undoQuota.get()-1);
+            }
+        }
+        //throw new NotImplementedException();
+
     }
 
     /**
@@ -145,7 +171,7 @@ public class GameState {
      */
     public int getMapMaxWidth() {
         // TODO
-        throw new NotImplementedException();
+        return this.map.getMaxWidth();
     }
 
     /**
@@ -156,6 +182,6 @@ public class GameState {
      */
     public int getMapMaxHeight() {
         // TODO
-        throw new NotImplementedException();
+        return this.map.getMaxHeight();
     }
 }

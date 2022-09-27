@@ -1,8 +1,9 @@
 package hk.ust.comp3021.tui;
 
-import hk.ust.comp3021.actions.Action;
+import hk.ust.comp3021.actions.*;
 import hk.ust.comp3021.game.InputEngine;
 import hk.ust.comp3021.utils.NotImplementedException;
+import hk.ust.comp3021.utils.StringResources;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.InputStream;
@@ -37,6 +38,32 @@ public class TerminalInputEngine implements InputEngine {
         final var inputLine = terminalScanner.nextLine();
 
         // TODO
-        throw new NotImplementedException();
+        var inputUpper = inputLine.toUpperCase();
+        switch (inputUpper) {
+            case "A":
+                return new Move.Left(0);
+            case "S":
+                return new Move.Down(0);
+            case "W":
+                return new Move.Up(0);
+            case "D":
+                return new Move.Right(0);
+            case "H":
+                return new Move.Left(1);
+            case "J":
+                return new Move.Down(1);
+            case "K":
+                return new Move.Up(1);
+            case "L":
+                return new Move.Right(1);
+            case "U":
+                return new Undo(-1);
+            case "EXIT":
+                return new Exit(-1);
+            default:
+                return new InvalidInput(-1, StringResources.INVALID_INPUT_MESSAGE);
+        }
+
+        //throw new NotImplementedException();
     }
 }

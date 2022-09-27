@@ -51,7 +51,7 @@ public class TerminalRenderingEngine implements RenderingEngine {
     public void message(@NotNull String content) {
         // TODO
         // Hint: System.out is also a PrintStream.
-        this.outputSteam.println(content);
+        this.outputSteam.printf(content);
         //throw new NotImplementedException();
     }
 }

@@ -22,9 +22,10 @@ import java.util.*;
 public class GameMap {
     private int width;
     private int height;
-    private int undoLimit;
+    private Optional<Integer> undoLimit;
     private Set<Position> destinations;
     private Entity[][] map;
+    private Map<Character, Position> playerPosition;
     /**
      * Create a new GameMap with width, height, set of box destinations and undo limit.
      *
@@ -38,12 +39,37 @@ public class GameMap {
      */
     public GameMap(int maxWidth, int maxHeight, Set<Position> destinations, int undoLimit) {
         // TODO
+        if (undoLimit < -1) {
+            throw new IllegalArgumentException();
+        }
         this.width = maxWidth;
         this.height = maxHeight;
         this.destinations = destinations;
-        this.undoLimit = undoLimit;
+        if (undoLimit == -1) {
+            this.undoLimit = Optional.empty();
+        }
+        else if (undoLimit >= 0) {
+            this.undoLimit = Optional.of(undoLimit);
+        }
+        else {
+            throw new IllegalArgumentException();
+        }
         this.map = new Entity[maxHeight][maxWidth];
         //throw new NotImplementedException();
+    }
+
+    public GameMap(GameMap gm) {
+        this.width = gm.width;
+        this.height = gm.height;
+        this.undoLimit = gm.undoLimit;
+        this.destinations = new HashSet<Position>(gm.destinations);
+        this.playerPosition = new HashMap<Character, Position>(gm.playerPosition);
+        this.map = new Entity[this.height][this.width];
+        for (int i = 0; i < this.height; ++i) {
+            for (int j = 0; j < this.width; ++j) {
+                this.putEntity(new Position(j, i), gm.getEntity(new Position(j, i)));
+            }
+        }
     }
 
     /**
@@ -85,20 +111,81 @@ public class GameMap {
         // TODO
         ArrayList<String> list = new ArrayList<String>(Arrays.asList(mapText.split("\\r?\\n")));
         int undoLimit = Integer.parseInt(list.get(0));
+        if (undoLimit < -1) {
+            throw new IllegalArgumentException();
+        }
         boolean illegal = false;
 
         list.remove(0);
         int height = list.size();
         int width = list.get(0).length();
         ArrayList<Position> destinationList = new ArrayList<Position>();
+
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < width; ++j) {
-                if (list.get(i).charAt(j) == '@') {
+                char temp = list.get(i).charAt(j);
+                if (temp == '@') {
                     destinationList.add(new Position(j, i));
                 }
             }
         }
-        return new GameMap(width, height, new HashSet<Position>(destinationList), undoLimit);
+        var result = new GameMap(width, height, new HashSet<Position>(destinationList), undoLimit);
+        Map<Character, Position> playerPosition = new HashMap<Character, Position>();
+        Set<Character> boxType = new HashSet<Character>();
+        int BoxCount = 0;
+
+        for (int i = 0; i < height; ++i) {
+            for (int j = 0; j < width; ++j) {
+                char temp = list.get(i).charAt(j);
+                if (Character.isAlphabetic(temp)) {
+                    if (Character.isUpperCase(temp)) {
+                        if (playerPosition.containsKey(temp)) {
+                            illegal = true;
+                            break;
+                        }
+                        playerPosition.put(temp, new Position(j, i));
+                        result.putEntity(new Position(j, i), new Player(temp - 'A'));
+                    }
+                    else {
+                        BoxCount++;
+                        boxType.add(temp);
+                        result.putEntity(new Position(j, i), new Box(temp - 'a'));
+                    }
+                }
+                else {
+                    switch (temp) {
+                        case '#':
+                            result.putEntity(new Position(j, i), new Wall());
+                            break;
+                        case '.':
+                            result.putEntity(new Position(j, i), new Empty());
+                            break;
+                    }
+                }
+            }
+        }
+
+
+
+        if (playerPosition.isEmpty() || BoxCount != destinationList.size() || boxType.size() != playerPosition.size()) {
+            illegal = true;
+        }
+
+        if (boxType.size() == playerPosition.size()) {
+            for (var entry : boxType) {
+                if (!playerPosition.containsKey(Character.toUpperCase(entry))) {
+                    illegal = true;
+                    break;
+                }
+            }
+        }
+
+        if (illegal) {
+            throw new IllegalArgumentException();
+        }
+
+        result.playerPosition = playerPosition;
+        return result;
     }
 
     /**
@@ -148,7 +235,7 @@ public class GameMap {
      */
     public Optional<Integer> getUndoLimit() {
         // TODO
-        return Optional.of(this.undoLimit);
+        return this.undoLimit;
     }
 
     /**
@@ -158,7 +245,11 @@ public class GameMap {
      */
     public Set<Integer> getPlayerIds() {
         // TODO
-        throw new NotImplementedException();
+        var result = new HashSet<Integer>();
+        for (var entry : this.playerPosition.keySet()) {
+            result.add(entry - 'A');
+        }
+        return result;
     }
 
     /**
@@ -179,5 +270,9 @@ public class GameMap {
     public int getMaxHeight() {
         // TODO
         return this.height;
+    }
+
+    public Map<Character, Position> getPlayerPosition() {
+        return this.playerPosition;
     }
 }

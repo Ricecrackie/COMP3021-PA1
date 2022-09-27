@@ -22,7 +22,10 @@ public abstract class AbstractSokobanGame implements SokobanGame {
      */
     protected boolean shouldStop() {
         // TODO
-        throw new NotImplementedException();
+        if (this.state.isWin()) {
+            return true;
+        }
+        return false;
     }
 
     /**
