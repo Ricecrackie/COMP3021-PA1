@@ -62,7 +62,7 @@ public class TerminalSokobanGame extends AbstractSokobanGame {
         if (this.state.isWin()) {
             this.renderingEngine.message(StringResources.WIN_MESSAGE);
         }
-        System.exit(0);
+        //System.exit(0);
     }
 
     public void printMap() {

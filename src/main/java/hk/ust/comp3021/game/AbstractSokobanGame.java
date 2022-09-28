@@ -38,9 +38,16 @@ public abstract class AbstractSokobanGame implements SokobanGame {
         return switch (action) {
             case Exit e-> new ActionResult.Success(e);
             case Undo u-> {
-                if (this.state.getUndoQuota().isEmpty() || this.state.getUndoQuota().get() > 0) {
+                if (this.state.getUndoQuota().isEmpty()) {
                     this.state.undo();
                     yield new ActionResult.Success(u);
+                } else if (this.state.getUndoQuota().isPresent()) {
+                    if (this.state.getUndoQuota().get() >= 1) {
+                        this.state.undo();
+                        yield new ActionResult.Success(u);
+                    } else {
+                        yield new ActionResult.Failed(u, StringResources.UNDO_QUOTA_RUN_OUT);
+                    }
                 } else {
                     yield new ActionResult.Failed(u, StringResources.UNDO_QUOTA_RUN_OUT);
                 }

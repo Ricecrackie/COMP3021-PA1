@@ -158,7 +158,9 @@ public class GameState {
         if (this.checkpoint == null) {
             this.state = new GameMap(this.map);
             if (!init) {
-                this.undoQuota = Optional.of(this.undoQuota.get()-1);
+                if (this.undoQuota.isPresent()) {
+                    this.undoQuota = Optional.of(this.undoQuota.get()-1);
+                }
             }
         } else {
             var currentBoxPositions = this.state.getBoxPositions();
@@ -166,8 +168,10 @@ public class GameState {
             for (var entry : currentBoxPositions) {
                 if (!(this.checkpoint.state.getEntity(entry) instanceof Box)) {
                     this.state = new GameMap(this.checkpoint.state);
-                    if (this.undoQuota.isPresent() && this.undoQuota.get() > 1) {
-                        this.undoQuota = Optional.of(this.undoQuota.get()-1);
+                    if (this.undoQuota.isPresent()) {
+                        if (this.undoQuota.get() > 1) {
+                            this.undoQuota = Optional.of(this.undoQuota.get()-1);
+                        }
                     }
                     this.checkpoint = this.checkpoint.checkpoint;
                     return;
