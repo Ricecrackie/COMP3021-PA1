@@ -3,6 +3,7 @@ package hk.ust.comp3021.game;
 import hk.ust.comp3021.entities.Box;
 import hk.ust.comp3021.entities.Empty;
 import hk.ust.comp3021.entities.Entity;
+import hk.ust.comp3021.entities.Player;
 import hk.ust.comp3021.utils.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,10 +26,11 @@ import java.util.Set;
  * <li>Undo quota left.</li>
  */
 public class GameState {
-    private final GameMap map;
+    private GameMap map;
     private Optional<Integer> undoQuota;
     private GameState checkpoint;
     private GameMap state;
+    private boolean init = true;
     /**
      * Create a running game state from a game map.
      *
@@ -105,7 +107,7 @@ public class GameState {
     public boolean isWin() {
 // TODO
         for (var position : this.map.getDestinations()) {
-            if (!(this.map.getEntity(position) instanceof Box)) {
+            if (!(this.state.getEntity(position) instanceof Box)) {
                 return false;
             }
         }
@@ -123,6 +125,9 @@ public class GameState {
      */
     public void move(Position from, Position to) {
         // TODO
+        if (this.state.getEntity(from) instanceof Player p) {
+            this.state.getPlayerPosition().put((char)(p.getId() + 'A'), to);
+        }
         this.state.putEntity(to, this.state.getEntity(from));
         this.state.putEntity(from, new Empty());
     }
@@ -139,6 +144,7 @@ public class GameState {
         // TODO
         this.checkpoint = new GameState(new GameMap(this.state));
         this.checkpoint.undoQuota = this.undoQuota;
+        this.checkpoint.init = false;
     }
 
     /**
@@ -152,12 +158,26 @@ public class GameState {
         // TODO
         if (this.checkpoint == null) {
             this.state = new GameMap(this.map);
-        }
-        else {
-            this.state = new GameMap(this.checkpoint.state);
-            if (this.undoQuota.isPresent() && this.undoQuota.get() > 1) {
+            if (!init) {
                 this.undoQuota = Optional.of(this.undoQuota.get()-1);
             }
+        }
+        else {
+            var currentBoxPositions = this.state.getBoxPositions();
+            //var checkpointBoxPositions = this.checkpoint.state.getBoxPositions();
+            for (var entry : currentBoxPositions) {
+                if (!(this.checkpoint.state.getEntity(entry) instanceof Box)) {
+                    this.state = new GameMap(this.checkpoint.state);
+                    if (this.undoQuota.isPresent() && this.undoQuota.get() > 1) {
+                        this.undoQuota = Optional.of(this.undoQuota.get()-1);
+                    }
+                    this.checkpoint = this.checkpoint.checkpoint;
+                    return;
+                }
+            }
+            this.init = false;
+            this.checkpoint = this.checkpoint.checkpoint;
+            undo();
         }
         //throw new NotImplementedException();
 

@@ -1,6 +1,8 @@
 package hk.ust.comp3021.tui;
 
 
+import hk.ust.comp3021.actions.ActionResult;
+import hk.ust.comp3021.actions.Exit;
 import hk.ust.comp3021.game.AbstractSokobanGame;
 import hk.ust.comp3021.game.GameState;
 import hk.ust.comp3021.game.InputEngine;
@@ -45,17 +47,33 @@ public class TerminalSokobanGame extends AbstractSokobanGame {
     public void run() {
         // TODO
         this.renderingEngine.message(StringResources.GAME_READY_MESSAGE);
+        this.printMap();
         while (!this.shouldStop()) {
-            this.renderingEngine.render(this.state);
-            Optional<Integer> quota = this.state.getUndoQuota();
-            if (quota.isEmpty()) {
-                this.renderingEngine.message(StringResources.UNDO_QUOTA_UNLIMITED);
-            }
-            else if (quota.isPresent()) {
-                this.renderingEngine.message(String.format(StringResources.UNDO_QUOTA_TEMPLATE, this.state.getUndoQuota().get()));
-            }
             var act = this.inputEngine.fetchAction();
+            if (act instanceof Exit) {
+                this.requestExit = true;
+            }
             var actResult = this.processAction(act);
+            if (actResult instanceof ActionResult.Failed) {
+                this.renderingEngine.message(((ActionResult.Failed) actResult).getReason());
+            }
+            this.printMap();
+        }
+        this.renderingEngine.message(StringResources.GAME_EXIT_MESSAGE);
+        if (this.state.isWin()) {
+            this.renderingEngine.message(StringResources.WIN_MESSAGE);
+        }
+        System.exit(0);
+    }
+
+    public void printMap() {
+        this.renderingEngine.render(this.state);
+        Optional<Integer> quota = this.state.getUndoQuota();
+        if (quota.isEmpty()) {
+            this.renderingEngine.message(StringResources.UNDO_QUOTA_UNLIMITED);
+        }
+        else if (quota.isPresent()) {
+            this.renderingEngine.message(String.format(StringResources.UNDO_QUOTA_TEMPLATE, this.state.getUndoQuota().get()));
         }
     }
 }

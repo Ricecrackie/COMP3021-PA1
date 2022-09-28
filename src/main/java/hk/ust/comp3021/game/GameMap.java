@@ -63,7 +63,11 @@ public class GameMap {
         this.height = gm.height;
         this.undoLimit = gm.undoLimit;
         this.destinations = new HashSet<Position>(gm.destinations);
-        this.playerPosition = new HashMap<Character, Position>(gm.playerPosition);
+        this.playerPosition = new HashMap<Character, Position>();
+        //this.playerPosition = new HashMap<Character, Position>(gm.playerPosition);
+        for (var entry : gm.playerPosition.keySet()) {
+            this.playerPosition.put(entry, new Position(gm.playerPosition.get(entry).x(), gm.playerPosition.get(entry).y()));
+        }
         this.map = new Entity[this.height][this.width];
         for (int i = 0; i < this.height; ++i) {
             for (int j = 0; j < this.width; ++j) {
@@ -119,10 +123,15 @@ public class GameMap {
         list.remove(0);
         int height = list.size();
         int width = list.get(0).length();
+        for (var entry : list) {
+            if (entry.length() > width) {
+                width = entry.length();
+            }
+        }
         ArrayList<Position> destinationList = new ArrayList<Position>();
 
         for (int i = 0; i < height; ++i) {
-            for (int j = 0; j < width; ++j) {
+            for (int j = 0; j < list.get(i).length(); ++j) {
                 char temp = list.get(i).charAt(j);
                 if (temp == '@') {
                     destinationList.add(new Position(j, i));
@@ -135,7 +144,7 @@ public class GameMap {
         int BoxCount = 0;
 
         for (int i = 0; i < height; ++i) {
-            for (int j = 0; j < width; ++j) {
+            for (int j = 0; j < list.get(i).length(); ++j) {
                 char temp = list.get(i).charAt(j);
                 if (Character.isAlphabetic(temp)) {
                     if (Character.isUpperCase(temp)) {
@@ -157,6 +166,7 @@ public class GameMap {
                         case '#':
                             result.putEntity(new Position(j, i), new Wall());
                             break;
+                        case '@':
                         case '.':
                             result.putEntity(new Position(j, i), new Empty());
                             break;
@@ -208,6 +218,9 @@ public class GameMap {
      */
     public void putEntity(Position position, Entity entity) {
         // TODO
+        if (entity == null) {
+            return;
+        }
         int x = position.x();
         int y = position.y();
         switch (entity) {
@@ -226,6 +239,18 @@ public class GameMap {
     public @NotNull @Unmodifiable Set<Position> getDestinations() {
         // TODO
         return this.destinations;
+    }
+
+    public @NotNull Set<Position> getBoxPositions() {
+        Set<Position> result = new HashSet<Position>();
+        for (int y = 0; y < getMaxHeight(); ++y) {
+            for (int x = 0; x < map[y].length; ++x) {
+                if (getEntity(new Position(x, y)) instanceof Box) {
+                    result.add(new Position(x, y));
+                }
+            }
+        }
+        return result;
     }
 
     /**
