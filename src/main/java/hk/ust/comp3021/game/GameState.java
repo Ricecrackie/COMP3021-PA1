@@ -4,7 +4,6 @@ import hk.ust.comp3021.entities.Box;
 import hk.ust.comp3021.entities.Empty;
 import hk.ust.comp3021.entities.Entity;
 import hk.ust.comp3021.entities.Player;
-import hk.ust.comp3021.utils.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
@@ -161,8 +160,7 @@ public class GameState {
             if (!init) {
                 this.undoQuota = Optional.of(this.undoQuota.get()-1);
             }
-        }
-        else {
+        } else {
             var currentBoxPositions = this.state.getBoxPositions();
             //var checkpointBoxPositions = this.checkpoint.state.getBoxPositions();
             for (var entry : currentBoxPositions) {
@@ -180,7 +178,6 @@ public class GameState {
             undo();
         }
         //throw new NotImplementedException();
-
     }
 
     /**

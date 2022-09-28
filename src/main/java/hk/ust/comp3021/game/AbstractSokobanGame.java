@@ -2,11 +2,8 @@ package hk.ust.comp3021.game;
 
 import hk.ust.comp3021.actions.*;
 import hk.ust.comp3021.entities.*;
-import hk.ust.comp3021.utils.NotImplementedException;
 import hk.ust.comp3021.utils.StringResources;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Optional;
 
 /**
  * A base implementation of Sokoban Game.
@@ -44,8 +41,7 @@ public abstract class AbstractSokobanGame implements SokobanGame {
                 if (this.state.getUndoQuota().isEmpty() || this.state.getUndoQuota().get() > 0) {
                     this.state.undo();
                     yield new ActionResult.Success(u);
-                }
-                else {
+                } else {
                     yield new ActionResult.Failed(u, StringResources.UNDO_QUOTA_RUN_OUT);
                 }
             }
@@ -74,8 +70,7 @@ public abstract class AbstractSokobanGame implements SokobanGame {
                             this.state.move(nextpos, boxNextpos);
                             this.state.move(currentpos, nextpos);
                             yield new ActionResult.Success(m);
-                        }
-                        else {
+                        } else {
                             yield new ActionResult.Failed(m, "Failed to push the box.");
                         }
                     }

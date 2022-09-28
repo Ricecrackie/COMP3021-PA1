@@ -1,12 +1,10 @@
 package hk.ust.comp3021.game;
 
 import hk.ust.comp3021.entities.*;
-import hk.ust.comp3021.utils.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 
-import javax.print.attribute.standard.Destination;
 import java.util.*;
 
 /**
@@ -47,11 +45,9 @@ public class GameMap {
         this.destinations = destinations;
         if (undoLimit == -1) {
             this.undoLimit = Optional.empty();
-        }
-        else if (undoLimit >= 0) {
+        } else if (undoLimit >= 0) {
             this.undoLimit = Optional.of(undoLimit);
-        }
-        else {
+        } else {
             throw new IllegalArgumentException();
         }
         this.map = new Entity[maxHeight][maxWidth];
@@ -141,7 +137,7 @@ public class GameMap {
         var result = new GameMap(width, height, new HashSet<Position>(destinationList), undoLimit);
         Map<Character, Position> playerPosition = new HashMap<Character, Position>();
         Set<Character> boxType = new HashSet<Character>();
-        int BoxCount = 0;
+        int boxCount = 0;
 
         for (int i = 0; i < height; ++i) {
             for (int j = 0; j < list.get(i).length(); ++j) {
@@ -154,14 +150,12 @@ public class GameMap {
                         }
                         playerPosition.put(temp, new Position(j, i));
                         result.putEntity(new Position(j, i), new Player(temp - 'A'));
-                    }
-                    else {
-                        BoxCount++;
+                    } else {
+                        boxCount++;
                         boxType.add(temp);
                         result.putEntity(new Position(j, i), new Box(temp - 'a'));
                     }
-                }
-                else {
+                } else {
                     switch (temp) {
                         case '#':
                             result.putEntity(new Position(j, i), new Wall());
@@ -170,6 +164,8 @@ public class GameMap {
                         case '.':
                             result.putEntity(new Position(j, i), new Empty());
                             break;
+                        default:
+                            break;
                     }
                 }
             }
@@ -177,7 +173,7 @@ public class GameMap {
 
 
 
-        if (playerPosition.isEmpty() || BoxCount != destinationList.size() || boxType.size() != playerPosition.size()) {
+        if (playerPosition.isEmpty() || boxCount != destinationList.size() || boxType.size() != playerPosition.size()) {
             illegal = true;
         }
 
@@ -224,10 +220,18 @@ public class GameMap {
         int x = position.x();
         int y = position.y();
         switch (entity) {
-            case Box b -> this.map[y][x] = new Box(b.getPlayerId());
-            case Empty ignored -> this.map[y][x] = new Empty();
-            case Player p -> this.map[y][x] = new Player(p.getId());
-            case Wall ignored -> this.map[y][x] = new Wall();
+            case Box b -> {
+                this.map[y][x] = new Box(b.getPlayerId());
+            }
+            case Empty ignored -> {
+                this.map[y][x] = new Empty();
+            }
+            case Player p -> {
+                this.map[y][x] = new Player(p.getId());
+            }
+            case Wall ignored -> {
+                this.map[y][x] = new Wall();
+            }
         }
     }
 

@@ -7,7 +7,6 @@ import hk.ust.comp3021.game.AbstractSokobanGame;
 import hk.ust.comp3021.game.GameState;
 import hk.ust.comp3021.game.InputEngine;
 import hk.ust.comp3021.game.RenderingEngine;
-import hk.ust.comp3021.utils.NotImplementedException;
 import hk.ust.comp3021.utils.StringResources;
 
 import java.util.Optional;
@@ -71,8 +70,7 @@ public class TerminalSokobanGame extends AbstractSokobanGame {
         Optional<Integer> quota = this.state.getUndoQuota();
         if (quota.isEmpty()) {
             this.renderingEngine.message(StringResources.UNDO_QUOTA_UNLIMITED);
-        }
-        else if (quota.isPresent()) {
+        } else if (quota.isPresent()) {
             this.renderingEngine.message(String.format(StringResources.UNDO_QUOTA_TEMPLATE, this.state.getUndoQuota().get()));
         }
     }
