@@ -29,7 +29,7 @@ public class GameState {
     private Optional<Integer> undoQuota;
     private GameState checkpoint;
     private GameMap state;
-    private boolean init = true;
+    private static boolean init = true;
     /**
      * Create a running game state from a game map.
      *
@@ -169,7 +169,7 @@ public class GameState {
                 if (!(this.checkpoint.state.getEntity(entry) instanceof Box)) {
                     this.state = new GameMap(this.checkpoint.state);
                     if (this.undoQuota.isPresent()) {
-                        if (this.undoQuota.get() > 1) {
+                        if (this.undoQuota.get() >= 1) {
                             this.undoQuota = Optional.of(this.undoQuota.get()-1);
                         }
                     }
@@ -177,7 +177,7 @@ public class GameState {
                     return;
                 }
             }
-            this.init = false;
+            init = false;
             this.checkpoint = this.checkpoint.checkpoint;
             undo();
         }
