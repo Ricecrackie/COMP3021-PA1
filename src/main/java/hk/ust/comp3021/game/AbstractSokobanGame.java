@@ -66,6 +66,9 @@ public abstract class AbstractSokobanGame implements SokobanGame {
                         yield new ActionResult.Success(m);
                     }
                     case Box b-> {
+                        if (b.getPlayerId() != m.getInitiator()) {
+                            yield new ActionResult.Failed(m,"You cannot move other players' boxes.");
+                        }
                         Position boxNextpos = switch(m) {
                             case Move.Up u -> new Position(nextpos.x(), nextpos.y()-1);
                             case Move.Down d -> new Position(nextpos.x(), nextpos.y()+1);
@@ -73,9 +76,6 @@ public abstract class AbstractSokobanGame implements SokobanGame {
                             case Move.Right r -> new Position(nextpos.x()+1, nextpos.y());
                         };
                         if (this.state.getEntity(boxNextpos) instanceof Empty) {
-                            if (b.getPlayerId() != m.getInitiator()) {
-                                yield new ActionResult.Failed(m,"You cannot move other players' boxes.");
-                            }
                             this.state.checkpoint();
                             this.state.move(nextpos, boxNextpos);
                             this.state.move(currentpos, nextpos);
