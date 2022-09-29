@@ -26,10 +26,9 @@ import java.util.Set;
  */
 public class GameState {
     private GameMap map;
-    private Optional<Integer> undoQuota;
+    private static Optional<Integer> undoQuota;
     private GameState checkpoint;
     private GameMap state;
-    private static boolean init = true;
     /**
      * Create a running game state from a game map.
      *
@@ -141,9 +140,10 @@ public class GameState {
      */
     public void checkpoint() {
         // TODO
-        this.checkpoint = new GameState(new GameMap(this.state));
+        var newState = new GameState(new GameMap(this.state));
+        newState.checkpoint = this.checkpoint;
+        this.checkpoint = newState;
         this.checkpoint.undoQuota = this.undoQuota;
-        this.checkpoint.init = false;
     }
 
     /**
@@ -157,17 +157,12 @@ public class GameState {
         // TODO
         if (this.checkpoint == null) {
             this.state = new GameMap(this.map);
-            if (!init) {
-                if (this.undoQuota.isPresent()) {
-                    this.undoQuota = Optional.of(this.undoQuota.get()-1);
-                }
-            }
         } else {
             var currentBoxPositions = this.state.getBoxPositions();
             //var checkpointBoxPositions = this.checkpoint.state.getBoxPositions();
             for (var entry : currentBoxPositions) {
                 if (!(this.checkpoint.state.getEntity(entry) instanceof Box)) {
-                    this.state = new GameMap(this.checkpoint.state);
+                    this.state = new GameMap(this.checkpoint.map);
                     if (this.undoQuota.isPresent()) {
                         if (this.undoQuota.get() >= 1) {
                             this.undoQuota = Optional.of(this.undoQuota.get()-1);
@@ -177,11 +172,15 @@ public class GameState {
                     return;
                 }
             }
-            init = false;
+            //System.out.println("recursive");
             this.checkpoint = this.checkpoint.checkpoint;
+            if (this.undoQuota.isPresent()) {
+                if (this.undoQuota.get() >= 1) {
+                    this.undoQuota = Optional.of(this.undoQuota.get()-1);
+                }
+            }
             undo();
         }
-        //throw new NotImplementedException();
     }
 
     /**
